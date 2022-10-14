@@ -1,15 +1,15 @@
-import logo from './logo.svg';
 import './App.css';
 import {useEffect, useState} from "react";
+import Draggable from 'react-draggable'
 
 const selectItem = [
-  'Банан',
-  'Груша',
-  'Ананас',
-  'Киви',
-  'Маракуя',
-  'Мандарин',
-  'Манго',
+  'Иванов',
+  'Петров',
+  'Сидоров',
+  'Карпов',
+  'Федосов',
+  'Романов',
+  'Рюриков',
 ]
 
 const rows = 8; // Количество рядов
@@ -23,6 +23,8 @@ function App() {
   const [selected, setSelected] = useState(false);
   const [pole, setPole] = useState([]);
   const [coords, setCoords] = useState([0, 0]);
+
+  const [compute, setCompute] = useState(true);
 
 
   useEffect(() => {
@@ -40,12 +42,25 @@ function App() {
     document.addEventListener('keypress', clicker);
 
   }, []);
+
   function getFruit() {
 
 
     let variant = Math.random() * 100;
 
-    setSelected(Math.round(variant / blur + 0.5) - 1);
+    let t = 3;
+    setCompute(false);
+    setSelected(4); // Для отображения счетчика
+    let time = setInterval(() => {
+      if (t > 0) {
+        setSelected(t)
+        t--;
+      } else {
+        setSelected(Math.round(variant / blur + 0.5) - 1);
+        setCompute(true)
+        clearInterval(time);
+      }
+    }, 1000)
 
   }
 
@@ -99,20 +114,32 @@ function App() {
 
   }
 
+  function movee(e) {
+    e.preventDefault();
+  }
+
   return (
     <div className="App">
-<button onClick={getFruit}>Выбери фрукт</button><br/>
-      {selected > -1 && <span>{selectItem[selected]}</span>}
+      <button onClick={getFruit}>Кто пойдет к доске?</button>
+      <br/>
+      {selected > -1 && compute ? <span>{selectItem[selected]}</span> : selected}
       <hr/>
+      Можно перемещать символ используя клавиши asdw на клавиатуре
       <table cellPadding={0} cellSpacing={0}>
-      {pole.map( line => {
-        return <tr>
-          {line.map( col => {
-            return <td>{col}</td>
-          })}
-        </tr>
-      })}
+        {pole.map(line => {
+          return <tr>
+            {line.map(col => {
+              return <td>{col}</td>
+            })}
+          </tr>
+        })}
       </table>
+      <hr/>
+      <Draggable handle={'#kot'} onDrag={movee}>
+        <div id={'kot'}>
+          <img alt={'кот'} src={'/img/kot.jpg'} width={150}/>
+        </div>
+      </Draggable>
     </div>
   );
 }
