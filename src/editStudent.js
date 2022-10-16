@@ -3,32 +3,44 @@ import {useEffect, useState} from "react";
 
 /** @param {RenderLineTypeInEdit} data */
 const ConstLine = (data) => {
-  console.log('dataConst', data)
+  //console.log('dataConst', data)
   return <tr key={data.student.name}>
     <td>{data.student.name}</td>
     <td>{data.student.count}</td>
+    <td>Р:{data.student.place[0]} М:{data.student.place[1]}</td>
     <td><span style={{color: data.selected ? 'grey' : 'black'}}
               onClick={() => {
-                console.log('click', data.selected);
-                /*if (data.selected === '') {
-                  console.log('INCLICK', data.student.name)
-                  data.click(data.student.name)
-                }*/
                 data.click(data.student.name)
               }}>Edit</span>{' '}
-      <span>Del</span></td>
+      <span onClick={() => {
+
+        if (window.confirm(`Вы уверены в удалении ученика ${data.student.name}`)) {
+          data.delete(data.student.name);
+        }
+      }
+      }>Del</span></td>
   </tr>
 }
 
 /** @param {RenderLineTypeInEdit} data */
 const EditLine = (data) => {
   const [editData, setEditData] = useState({ ...data.student })
-  console.log('EditLine', data)
-
+  //console.log('EditLine', data)
+  /**
+   *
+   * @param {React.MouseEvent} e
+   */
   const change = (e) => {
     const edited = editData;
-    edited[e.currentTarget.name] = e.currentTarget.value;
-    console.log('EDITED', edited, e.currentTarget.name, e.currentTarget.value)
+    console.log(e)
+    console.log(e.currentTarget.getAttribute('data-idx'));
+    if (e.currentTarget.getAttribute('data-idx') !== null) {
+      console.log('type', typeof e.currentTarget.getAttribute('data-idx'))
+      edited.place[Number(e.currentTarget.getAttribute('data-idx'))] = Number(e.currentTarget.value);
+      console.log('ITOG', edited.place);
+    } else {
+      edited[e.currentTarget.name] = e.currentTarget.value;
+    }
     setEditData({ ...edited })
   }
 
@@ -44,10 +56,18 @@ const EditLine = (data) => {
   return (
     <tr key={data.student.name}>
       <td><input name={'name'} style={{width: '100%', margin: 0}} type={'text'} value={editData.name} onChange={change}/></td>
-      <td><input name={'count'} style={{width: 50, margin: 0}} width={50} type={'number'} value={editData.count} onChange={change}/></td>
+      <td><input name={'count'} style={{width: 50, margin: 0}} type={'number'} value={editData.count} onChange={change}/></td>
       <td>
-        <Badge onClick={click}>Да</Badge>{' '}
-        <Badge onClick={() => data.click('')}>Нет</Badge>
+        Р:<input style={{width: 40, margin: 0}} name={'place'} data-idx={0} type={"number"} value={editData.place[0]} onChange={change} />{' '}
+        М:<input style={{width: 40, margin: 0}} name={'place'} data-idx={1} type={"number"} value={editData.place[1]} onChange={change} />
+      </td>
+      <td>
+        <Badge onClick={() => {
+          if (editData.name.length) {
+            click()
+          }
+        }}>Да</Badge>{' '}
+        <Badge onClick={() => data.cancel(data.student.name ? 'stud': 'add')}>Нет</Badge>
       </td>
     </tr>
   )
@@ -55,15 +75,15 @@ const EditLine = (data) => {
 
 const StudentLine = (props) => {
   const [data, setData] = useState(props);
-  console.log('StudentLine props', props)
-  console.log('check', props.selected !== props.student.name)
+  //console.log('StudentLine props', props)
+  //console.log('check', props.selected !== props.student.name)
   useEffect(() => {
     setData({ ...props });
   }, [props]);
 
-  useEffect(() => {
+  /*useEffect(() => {
     console.log('DATAINStudent', data);
-  }, [data])
+  }, [data])*/
 
   return (
     <>
