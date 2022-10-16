@@ -29,11 +29,27 @@
 }
 
 table td {
-  border: 1px solid #3bd41e;
-  width: 30px;
+  border: 1px solid #535353;
+  width: 60px;
   height: 30px;
   text-align: center;
   vertical-align: center;
+}
+
+.classRoom {
+  display: flex;
+  place-content: center;
+  padding-top: 30px;
+}
+
+.editList {
+  position: absolute;
+  right: 20px;
+  font-size: 1rem;
+}
+
+table[data-name='klass'] td:nth-child(3n) {
+  border: 1px solid #e5e5e5;
 }
 
 @keyframes App-logo-spin {
