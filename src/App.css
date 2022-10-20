@@ -29,7 +29,6 @@
 }
 
 table td {
-  border: 1px solid #535353;
   width: 60px;
   height: 30px;
   text-align: center;
@@ -48,8 +47,47 @@ table td {
   font-size: 1rem;
 }
 
-table[data-name='klass'] td:nth-child(3n) {
+.partRazmer {
+  width: 130px;
+  height: 50px;
+}
+
+.cl {
+  display: flex;
+  justify-content: center;
+}
+
+
+/*table[data-name='klass'] td:nth-child(3n) {
   border: 1px solid #e5e5e5;
+}*/
+
+.studentSelect {
+  background-color: #59e29e !important;
+}
+
+.partaPusto {
+  background-color: #ffad7a;
+  border: 1px solid #f8f8f8;
+}
+
+.partaNikogo {
+  background-color: #c1c1c1;
+  border: 1px solid #f8f8f8;
+}
+
+.partaPusto span {
+  display: none;
+}
+
+/*.partaPusto:hover span {
+  display: block;
+  font-size: 1.2em;
+}*/
+
+.prohod {
+  background-color: white;
+  border: none;
 }
 
 @keyframes App-logo-spin {

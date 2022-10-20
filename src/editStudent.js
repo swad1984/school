@@ -7,7 +7,7 @@ const ConstLine = (data) => {
   return <tr key={data.student.name}>
     <td>{data.student.name}</td>
     <td>{data.student.count}</td>
-    <td>Р:{data.student.place[0]} М:{data.student.place[1]}</td>
+    <td>Р:{data.student.place[0] + 1} М:{data.student.place[1] + 1}</td>
     <td><span style={{color: data.selected ? 'grey' : 'black'}}
               onClick={() => {
                 data.click(data.student.name)
@@ -35,8 +35,8 @@ const EditLine = (data) => {
     console.log(e)
     console.log(e.currentTarget.getAttribute('data-idx'));
     if (e.currentTarget.getAttribute('data-idx') !== null) {
-      console.log('type', typeof e.currentTarget.getAttribute('data-idx'))
-      edited.place[Number(e.currentTarget.getAttribute('data-idx'))] = Number(e.currentTarget.value);
+      console.log('type', typeof e.currentTarget.getAttribute('data-idx'), e.currentTarget.value)
+      edited.place[Number(e.currentTarget.getAttribute('data-idx'))] = Number(e.currentTarget.value) - 1;
       console.log('ITOG', edited.place);
     } else {
       edited[e.currentTarget.name] = e.currentTarget.value;
@@ -58,8 +58,8 @@ const EditLine = (data) => {
       <td><input name={'name'} style={{width: '100%', margin: 0}} type={'text'} value={editData.name} onChange={change}/></td>
       <td><input name={'count'} style={{width: 50, margin: 0}} type={'number'} value={editData.count} onChange={change}/></td>
       <td>
-        Р:<input style={{width: 40, margin: 0}} name={'place'} data-idx={0} type={"number"} value={editData.place[0]} onChange={change} />{' '}
-        М:<input style={{width: 40, margin: 0}} name={'place'} data-idx={1} type={"number"} value={editData.place[1]} onChange={change} />
+        Р:<input style={{width: 40, margin: 0}} name={'place'} data-idx={0} type={"number"} max={15} min={1} step={1} value={Number(editData.place[0]) + 1} onChange={change} />{' '}
+        М:<input style={{width: 40, margin: 0}} name={'place'} data-idx={1} type={"number"} max={6} min={1} step={1} value={Number(editData.place[1]) + 1} onChange={change} />
       </td>
       <td>
         <Badge onClick={() => {

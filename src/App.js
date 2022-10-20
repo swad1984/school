@@ -1,18 +1,49 @@
 import './App.css';
 import './css/bootstrap.css';
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import Draggable from 'react-draggable'
 import {Modal, Button, Container, Row, Col, Form} from 'react-bootstrap';
 import {StudentLine, EditLine} from "./editStudent";
+import {ClassRoom} from './classRoom'
+import {layer} from "@fortawesome/fontawesome-svg-core";
 
 //import {} from '@fortawesome/fontawesome-svg-core'
 //import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
-const rows = 7; // Количество рядов
-const cols = 8; // Количество столбцов
+const rows = 8; // Количество рядов
+const cols = 6; // Количество столбцов
 
 const symbol = 'X';
-const pusto = ' ';
+const pusto = '';
+
+/** @param {StudentShowType} student
+ * @param {string} klass
+ * @return {number[][]}
+ * */
+function getPole(student, klass = '') {
+  const places = [];
+  console.warn('GET_POLE', student, klass);
+  console.trace()
+  //student.forEach(/** @param {StudentShowType} stud */(stud) => {
+  for (let i in student) {
+    const len = places.length;
+    console.log('KEY', i, student[i])
+    console.log('CHECK', student[i].place, student[i].place[0], places.length)
+    // Если ряд больше, чем есть в массиве, добавляем ряды
+    if (student[i].place[0] > len - 1) {
+      console.log('DOINS', student[i].place[0] - len)
+      for (let j = 0; j <= student[i].place[0] - len; j++) {
+        console.log('BEG_INS', j, student[i].place[0] - len)
+        places.push([pusto, pusto, pusto, pusto, pusto, pusto]);
+      }
+    }
+    console.log('POLE_F', places)
+    places[student[i].place[0]][student[i].place[1]] = i;
+    console.log(`STUDENT ${i} SIT on ${student[i].place[0]} ${student[i].place[1]}`)
+  }
+  console.log('RETURNED POLE', places)
+  return places;
+}
 
 function App() {
   const [blur, setBlur] = useState(0);
@@ -33,40 +64,74 @@ function App() {
   const [addClk, setAddClk] = useState(false)
   const [klassNew, setKlassNew] = useState('')
 
+  const [places, setPlaces] = useState([0, 0, 0, 0, 0, 0])
+
+  const [partShow, setPartShow] = useState('');
+
   useEffect(() => {
-    const area = pole;
+
+    //document.removeEventListener('keypress', clicker);
+    //document.addEventListener('keypress', clicker);
+    let getData = {}
+    let klass = '';
+    try {
+      getData = JSON.parse(localStorage.getItem('myClasses'));
+      const key = Object.keys(getData);
+      if (!key.length) {
+        throw new Error('no data')
+        //return new Error('no data')
+      }
+      klass = localStorage.getItem('className')
+      if (!klass) {
+        console.log('GET_CLASS', getData[0], getData)
+        for (let i in getData) {
+          klass = i;
+          break;
+        }
+      }
+      setData(getData);
+      setSelectKlass(klass);
+      setListClass(klass);
+      console.log('DO_WORK_1', klass, getData);
+      setPole(getPole(getData[klass]));
+    } catch (e) {
+      const x = fetch('klass.json');
+      x.then(async (res) => {
+        return await res.json();
+      }).then(/** @param {KlassListType} res */res => {
+        getData = res;
+        setData(res);
+        klass = localStorage.getItem('className');
+        if (!klass) {
+          console.log('GET_CLASS', getData[0], getData)
+          for (let i in getData) {
+            klass = i;
+            break;
+          }
+        }
+        setSelectKlass(klass);
+        setListClass(klass)
+        console.log('DO_WORK_2', klass, getData);
+        setPole(getPole(getData[klass]));
+      })
+    }
+
+    /*const area = pole;
     for (let row = 0; row < rows; row++) {
       area[row] = [];
       for (let col = 0; col < cols; col++) {
         area[row][col] = pusto;
       }
     }
-    area[0][0] = symbol; // Расположить X в верхнем левом углу
-    setPole([...area]);
+    area[0][0] = symbol; // Расположить X в верхнем левом углу*/
 
-    document.removeEventListener('keypress', clicker);
-    document.addEventListener('keypress', clicker);
+    // хрень какая то
 
-    try {
-      const getData = JSON.parse(localStorage.getItem('myClasses'));
-      const key = Object.keys(getData);
-      if (!key.length) {
-        throw new Error('no data')
-      }
-      setData(getData);
-      setSelectKlass(localStorage.getItem('className'));
-      setListClass(localStorage.getItem('className'));
-    } catch (e) {
-      const x = fetch('klass.json');
-      x.then(async (res) => {
-        return await res.json();
-      }).then(/** @param {KlassListType} res */res => {
-        setData(res);
-        setSelectKlass(localStorage.getItem('className'));
-        setListClass(localStorage.getItem('className'))
-      })
-    }
-
+    /*if (klass && getData.hasOwnProperty(klass)) {
+      setPole(getPole(getData[klass]));
+    } else {
+      setPole([pusto, pusto, pusto, pusto, pusto, pusto]);
+    }*/
   }, []);
 
   useEffect(() => {
@@ -76,7 +141,6 @@ function App() {
     }
     setKlassNames(klassName);
     localStorage.setItem('myClasses', JSON.stringify(data));
-
   }, [data])
 
   /*function getFruit() {
@@ -100,7 +164,17 @@ function App() {
 
   const getRandomStudent = () => {
     if (blur) {
-      let variant = Math.random() * 100;
+      console.log('blur', blur)
+      let variant = Math.random() * 100 * Math.random();
+      let rndInt;
+      let rnd;
+      rndInt = setInterval(() => {
+        setTimeout(() => {
+          rnd = Math.random() * 100 * Math.random();
+        }, Math.random() * 100 * Math.random());
+
+      }, Math.random() * 100 * Math.random())
+
       let t = 2;
       setCompute(false);
       setSelected(3); // Для отображения счетчика
@@ -109,9 +183,20 @@ function App() {
           setSelected(t)
           t--;
         } else {
-          setSelected(Math.round(variant / blur + 0.5) - 1);
+          const x = Math.round((variant/blur + rnd/blur)/2 + 0.5 - 1);
+          setSelected(x);
           setCompute(true)
+
+          console.log('RND_RESULT', x, variant, rnd, blur)
+          console.log('RND_RESULT 1',
+            variant/blur,
+            rnd/blur,
+            variant/blur * rnd/blur,
+          (variant/blur * rnd/blur) / 2,
+            ((variant/blur * rnd/blur) / 2) + 0.4
+        )
           clearInterval(time);
+          clearInterval(rndInt)
         }
       }, 1000)
     } else {
@@ -121,7 +206,7 @@ function App() {
   }
 
   const clicker = (e) => {
-    move(e.code);
+    //move(e.code);
   }
 
   const move = (vector) => {
@@ -183,7 +268,7 @@ function App() {
    * @param {StudentShowType} a
    * @param {StudentShowType} b
    */
-  const sortByName = (a,b) => {
+  const sortByName = (a, b) => {
     if (a.name > b.name) return 1
     if (a.name < b.name) return -1;
     return 0;
@@ -191,10 +276,10 @@ function App() {
 
   const setBlurs = (n) => {
     if (n) {
-      setBlur(100/n);
+      setBlur(100 / n);
     } else {
       if (klassList.length) {
-        setBlur(100/klassList.length);
+        setBlur(100 / klassList.length);
       } else {
         setBlur(0);
       }
@@ -224,7 +309,10 @@ function App() {
         place: list[x].place
       })
     }
-    setKlassList(student.sort(sortByName))
+    console.log('UPD_CLASS', list, klass)
+    setPole(getPole({...list}))
+
+    setKlassList(student.sort(sortByName));
     setBlurs(student.length);
   }
 
@@ -247,14 +335,14 @@ function App() {
   const saveEdit = (changeData) => {
     console.log(selectKlass, changeData);
     if (selectKlass) {
-      const editData = { ...data };
+      const editData = {...data};
       delete editData[selectKlass][changeData.key];
       console.log('SAVE', changeData);
       editData[selectKlass][changeData.nameChange] = {
         count: changeData.countChange,
         place: changeData.placeChange
       }
-      setData({ ...editData });
+      setData({...editData});
       setEdit('');
       getKlassList(selectKlass);
       setListClass(selectKlass);
@@ -279,9 +367,9 @@ function App() {
 
   const delStudent = (name) => {
     if (selectKlass) {
-      const editData = { ...data };
+      const editData = {...data};
       delete editData[selectKlass][name];
-      setData({ ...editData });
+      setData({...editData});
       getKlassList(selectKlass);
     }
   }
@@ -297,19 +385,19 @@ function App() {
       cancel: cancelBtn
     }
   }
-  /*const newStudetnLine = {
-    student: {
-      name: '',
-      count: 0,
-      place: [0, 0]
-    },
-    save: saveEdit
-  }*/
 
   const chNewClass = (e) => {
     setKlassNew(e.currentTarget.value);
   }
   //console.log(selected)
+
+  const onOverPart = (name) => {
+    setPartShow(name)
+  }
+
+  const onOverPartEnd = () => {
+    setPartShow('')
+  }
   return (
     <div className="App">
       <Row style={{padding: 5}}>
@@ -321,26 +409,19 @@ function App() {
         </Col>
         <Col lg={8} md={8} xs={8} sm={8}>
           <button onClick={getRandomStudent}>Кто пойдет к доске?</button>
-          <span onClick={() => setOpen(o => !o)} className={'editList'}>Редактировать список</span>
+          <span onClick={() => setOpen(o => !o)} className={'editList'}>Изменить</span>
           <br/>
-          {selected > -1 ? compute ? <span style={{fontSize: '2em'}}>{klassList[selected].name}</span> : selected : 'Желающий'}
+          {partShow ? <span style={{fontSize: '2em'}}>{partShow}</span> : selected > -1 ? compute ?
+            <span style={{fontSize: '2em'}}>{klassList[selected].name}</span> :
+            <span style={{fontSize: '2em'}}>{selected}</span> : <span style={{fontSize: '2em'}}>Желающий</span>}
         </Col>
-        <Col lg={2} md={2} xs={2} sm={2} />
+        <Col lg={2} md={2} xs={2} sm={2}/>
       </Row>
 
       <hr/>
-      Можно перемещать символ используя клавиши asdw на клавиатуре
-      <div className={'classRoom'}>
-        <table data-name={'klass'} cellPadding={0} cellSpacing={0}>
-          {pole.map((line, indLine) => {
-            return <tr key={indLine}>
-              {line.map( (col, indCol) => {
-                return <td key={indCol}>{col}</td>
-              })}
-            </tr>
-          })}
-        </table>
-      </div>
+
+      <ClassRoom pole={pole} pusto={pusto} places={places} select={compute ? klassList[selected] : null} over={onOverPart} out={onOverPartEnd}/>
+
       <hr/>
       <Draggable handle={'#kot'} onDrag={movee}>
         <div id={'kot'}>
@@ -362,13 +443,13 @@ function App() {
                 </Col>
                 <Col lg={3} md={3} xs={3}>
                   {!addClk ? <Button onClick={() => setAddClk(true)}>Добавить</Button> :
-                      <div><input style={{width: 50}} value={klassNew} onChange={chNewClass} />
+                    <div><input style={{width: 50}} value={klassNew} onChange={chNewClass}/>
                       <Button onClick={() => {
-                        const list = { ...data };
+                        const list = {...data};
                         if (!data.hasOwnProperty(klassNew) && klassNew) {
                           list[klassNew] = {};
                         }
-                        setData({ ...list });
+                        setData({...list});
                         setAddClk(false)
                         setSelectKlass(klassNew);
                         setKlassNew('');
@@ -390,26 +471,19 @@ function App() {
                   <td style={{width: 100}}>Действия</td>
                 </tr>
                 {klassList.map(student => {
-                  return <StudentLine selected={edit} student={student} click={clickEdit} save={saveEdit} cancel={cancelBtn} delete={delStudent} />
+                  return <StudentLine selected={edit} student={student} click={clickEdit} save={saveEdit}
+                                      cancel={cancelBtn} delete={delStudent}/>
                 })}
                 <tr key={'addStud'}>
                   <td style={{textAlign: 'right', paddingRight: 30, margin: 3, padding: 4}} colSpan={4}>
                     <Button onClick={() => setAddNewStudent(true)} size={'sm'}>Добавить ученика</Button>
                   </td>
                 </tr>
-                {addNewStudent && <EditLine { ...studentTemplate() } />}
+                {addNewStudent && <EditLine {...studentTemplate()} />}
               </table>
             </Col>
-            <Col lg={5}>
-              <table data-name={'klass'} cellSpacing={0} cellPadding={0}>
-                {pole.map((line, index) => {
-                  return <tr key={index}>
-                    {line.map( (col, indCol) => {
-                      return <td key={indCol}>{col}</td>
-                    })}
-                  </tr>
-                })}
-              </table>
+            <Col lg={5}><br/>
+              <ClassRoom pole={pole} pusto={pusto} places={places}/>
             </Col>
           </Row>
 
