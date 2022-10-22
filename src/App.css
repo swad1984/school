@@ -29,11 +29,92 @@
 }
 
 table td {
-  border: 1px solid #3bd41e;
-  width: 30px;
+  width: 60px;
   height: 30px;
   text-align: center;
   vertical-align: center;
+}
+
+.classRoom {
+  display: flex;
+  place-content: center;
+  padding-top: 30px;
+}
+
+.editList {
+  position: absolute;
+  /*right: 20px;*/
+  font-size: 1rem;
+}
+
+.partRazmer {
+  width: 130px;
+  height: 50px;
+}
+
+.cl {
+  display: flex;
+  justify-content: center;
+}
+
+input {
+  border-radius: 0.375rem;
+  border: 1px solid #ced4da;
+}
+
+/*#stEdit {
+  border: 1px solid #0c0c0c;
+}*/
+
+/*table[data-name='klass'] td:nth-child(3n) {
+  border: 1px solid #e5e5e5;
+}*/
+
+.studentSelect {
+  background-color: #59e29e !important;
+}
+
+.partaPusto {
+  background-color: #FF8C00;
+  border: 1px solid #f8f8f8;
+}
+
+.partaNikogo {
+  background-color: #c1c1c1;
+  border: 1px solid #f8f8f8;
+}
+
+.partaBorder {
+  background-color: #c3bbe2;
+  border: 1px solid #f8f8f8;
+}
+
+.partaPusto span {
+  display: none;
+}
+
+.otstup {
+  padding-top: 5px;
+  padding-left: 25px;
+  padding-right: 25px;
+}
+
+/*.partaPusto:hover span {
+  display: block;
+  font-size: 1.2em;
+}*/
+
+.prohod {
+  background-color: white;
+  border: none;
+}
+
+.hoveredEdit td {
+  background-color: #3dd5f3;
+}
+
+.lineError td {
+  background-color: #ffb2bf;
 }
 
 @keyframes App-logo-spin {
