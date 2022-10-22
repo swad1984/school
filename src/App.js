@@ -600,7 +600,7 @@ function App() {
         </Modal.Header>
         <Modal.Body>
           <Row>
-            <Col lg={6}>
+            <Col lg={5}>
               <table id={'stEdit'} cellPadding={0} cellSpacing={0} style={{width: 500}}>
                 <tr key={'headerRed'}>
                   <td style={{width: 200, textAlign: 'left'}}>ФИО ученика</td>
@@ -660,7 +660,7 @@ function App() {
                 {addNewStudent && <EditLine {...studentTemplate()} />}
               </table>
             </Col>
-            <Col lg={6}><br/>
+            <Col lg={7}><br/>
               <ClassRoom pole={pole} pusto={pusto} over={onOverPart} out={onOverPartEnd}/>
             </Col>
           </Row>
