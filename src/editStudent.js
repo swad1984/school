@@ -1,4 +1,3 @@
-import {Badge} from "react-bootstrap";
 import {useEffect, useState} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faPenToSquare, faTrashCan, faFloppyDisk, faBan} from '@fortawesome/free-solid-svg-icons'
@@ -83,7 +82,6 @@ const EditLine = (data) => {
               onClick={() => data.cancel(data.student.name ? 'stud': 'add')}
               title={'Отмена'}
             />
-        {/*<Badge onClick={() => data.cancel(data.student.name ? 'stud': 'add')}>Нет</Badge>*/}
       </td>
     </tr>
   )

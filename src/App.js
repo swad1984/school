@@ -15,7 +15,8 @@ import {
   faCircleMinus,
   faFloppyDisk, faBan,
   faRectangleList
-} from '@fortawesome/free-solid-svg-icons'
+} from '@fortawesome/free-solid-svg-icons';
+import lodash from 'lodash';
 
 const pusto = '';
 const placeholderText = `Введите сюда список учеников.
@@ -43,18 +44,86 @@ function getPole(student, klass = '') {
   return places;
 }
 
+/**
+ * @typedef {number[]} PartType
+ */
+/**
+ * @typedef {Array<string, PartType, boolean>} StudListPrepare
+ */
+
 /** @param {string} list */
 function parseList(list) {
   let str;
   list.trim();
   str = list.replace(/[^а-яА-Яa-zA-z\d\s,:.]+/g, '');
-  console.log(str);
-  const parse = list.split(',').map((item) => {
-    const stud = item.replace(/\n/g, '').split(':')
+  let parts = [];
+  /** @type {StudListPrepare[]} */
+  let parse = list.split(',');
+  const ryad = Math.round(parse.length / 6);
+  parse = parse.map((item) => {
+    /** @type {StudListPrepare} */
+    const stud = item.replace(/\n/g, '').split(':');
+    if (stud.length === 1) return [stud[0], [0, 0], true];
+    try {
+      let c = stud[1];
+      stud[1] = stud[1].split('.');
+      stud[1][0] = Number(stud[1][0]);
+      stud[1][1] = Number(stud[1][1]);
+      if (stud[1][0] > ryad || stud[1][1] > 5) {
+        stud[2] = true;
+      } else {
+        if (parts.includes(stud[1].toString())) {
+          stud[2] = true;
+        } else {
+          parts.push(stud[1].toString());
+          stud[2] = false;
+        }
+      }
+    } catch (e) {
+      stud[1] = [0,0];
+      stud[2] = true;
+    }
     return stud;
   });
-  console.log(parse);
-  return str;
+  if (parse.length && !parse[parse.length - 1][0]) {
+    parse.splice(parse.length - 1, 1);
+  }
+  if (parts.length !== parse.length) { // Если есть ученики без парт или с пересечением
+    // Создадим массив с рассадкой и исключим найденное
+    let pustoPart = [];
+    for (let i = 0; i <= Math.round(parse.length / 6); i++) {
+      for (let j = 0; j <= 5; j++) {
+        pustoPart.push([i, j]);
+      }
+    }
+    const forDel = [];
+    for (let i = 0; i < parts.length; i++) {
+      const p = parts[i].split(',');
+      p[0] = Number(p[0]);
+      p[1] = Number(p[1]);
+      const idx = (p[0] * 6) + p[1];
+      forDel.push(idx);
+    }
+    pustoPart = pustoPart.filter((item, index) => !forDel.includes(index));
+    parse = parse.map((item) => {
+      if (item[2]) {
+        const p = item[1].toString();
+        item[1] = pustoPart[0];
+        parts.push(item[1].toString());
+        pustoPart.splice(0, 1);
+      }
+      return item;
+    })
+  }
+  // Всех пересадили, формируе список учеников
+  const result = {}
+  parse.forEach(item => {
+    result[item[0]] = {
+      count: 0,
+      place: item[1]
+    }
+  })
+  return lodash.cloneDeep(result);
 }
 
 function App() {
@@ -62,8 +131,6 @@ function App() {
   const [data, setData] = useState(/** @type {KlassListType} */{});
   const [selected, setSelected] = useState(-1);
   const [pole, setPole] = useState([]);
-  //const [coords, setCoords] = useState([0, 0]);
-
   const [compute, setCompute] = useState(true);
   const [open, setOpen] = useState(false);
   const [klassNames, setKlassNames] = useState(/** @type {string[]} */[])
@@ -76,8 +143,6 @@ function App() {
 
   const [addClk, setAddClk] = useState(false)
   const [klassNew, setKlassNew] = useState('')
-
-  const [places, setPlaces] = useState([0, 0, 0, 0, 0, 0])
 
   const [partShow, setPartShow] = useState('');
 
@@ -97,11 +162,10 @@ function App() {
       const key = Object.keys(getData);
       if (!key.length) {
         throw new Error('no data')
-        //return new Error('no data')
       }
       klass = localStorage.getItem('className')
-      if (!klass) {
-        console.log('GET_CLASS', getData[0], getData)
+
+      if (!klass || !getData[klass]) {
         for (let i in getData) {
           klass = i;
           break;
@@ -116,18 +180,17 @@ function App() {
       x.then(async (res) => {
         return await res.json();
       }).then(/** @param {KlassListType} res */res => {
-        getData = res;
-        setData(res);
+        setData({ ...res });
         klass = localStorage.getItem('className');
-        if (!klass) {
-          for (let i in getData) {
+        if (!klass || !res[klass]) {
+          for (let i in res) {
             klass = i;
             break;
           }
         }
         setSelectKlass(klass);
         setListClass(klass)
-        setPole(getPole(getData[klass]));
+        setPole(getPole(res[klass]));
       })
     }
   }, []);
@@ -357,10 +420,6 @@ function App() {
     }
   }
 
-  const editStudent = () => {
-    //console.log(3)
-  }
-
   return (
     <div className="App">
       <Container fluid>
@@ -414,7 +473,6 @@ function App() {
       <ClassRoom
         pole={pole}
         pusto={pusto}
-        places={places}
         select={compute ? klassList[selected] : null}
         over={onOverPart}
         out={onOverPartEnd}
@@ -452,14 +510,14 @@ function App() {
                     defaultValue={''}
                     onChange={changeSelectEdit}
                     placeholder={'Выберите класс'}
-                    style={{width: 400, marginTop: 0}}>
+                    style={{width: '100%', marginTop: 0}}>
                     <option value={''} disabled selected>Выберите класс</option>
                     {klassNames.map((item, index) => <option key={item} value={item}>{item}</option>)}
                   </Form.Select>
                 </Col>
                 <Col lg={7} md={7} xs={7}>
                   {!addClk ? <>
-                    <div style={{display: 'flex', alignItems: 'center', height: 38}}>
+                    <div style={{display: 'flex', width: '100%', alignItems: 'center', height: 38}}>
                       <FontAwesomeIcon
                         icon={faCirclePlus}
                         style={{color: '#198754', width: 30, paddingLeft: 25, cursor: 'pointer'}}
@@ -568,7 +626,6 @@ function App() {
                           placeholder={placeholderText}
                           value={addList}
                           onChange={(e) => {
-                            console.log(addList)
                             setAddList(e.currentTarget.value);
                           }}
                         /><br/>
@@ -582,8 +639,12 @@ function App() {
                         Список без спрец символов. Разделитель запятая. Если копируете из Word, пожалуйста, сначала вставьте скопированный текст в обычный блокнот, далее копируете текст из блокнота и вставляете сюда(это поможет убрать множество лишних служебных символов)
                       </div><br/>
                       <Button onClick={() => {
-                        //setAddListEnable(false)
-                        console.log('RET', parseList(addList));
+                        const res = parseList(addList);
+                        const list = { ...data };
+                        Object.assign(list[selectKlass], res);
+                        setData({ ...list });
+                        setAddListEnable(false);
+                        setAddList('');
                       }} size={'sm'}>Загрузить</Button>{' '}
                       <Button onClick={() => {
                         setAddListEnable(false);
@@ -597,7 +658,7 @@ function App() {
               </table>
             </Col>
             <Col lg={6}><br/>
-              <ClassRoom pole={pole} pusto={pusto} places={places} edit={editStudent} over={onOverPart} out={onOverPartEnd}/>
+              <ClassRoom pole={pole} pusto={pusto} over={onOverPart} out={onOverPartEnd}/>
             </Col>
           </Row>
 
