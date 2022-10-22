@@ -23,4 +23,10 @@
  * @property {StudentShowType} student
  * @property {string} selected
  * @property {function(data: Object): void} save
+ * @property {function(): void} cancel
+ * @property {function(): void} delete
+ * @property {string} over
+ * @property {function(name: string): void} onOver
+ * @property {string[]} places
+ *
  */

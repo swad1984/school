@@ -1,22 +1,26 @@
 import {Col, Container, Row} from "react-bootstrap";
-import React, {useState} from "react";
+import React from "react";
 
-const ClassRoom = ({pole, pusto, places, over, out, select}) => {
-  const [place, setPlace] = useState(places)
-  console.log('PLACE', place, pole);
+const ClassRoom = ({pole, pusto, places, over, out, select, boarder, click, edit}) => {
 
   return <Container fluid>
     {pole.map((line, indLine) => {
       let npart = 0;
-      return <Row><Col className={'cl'} lg={12} xs={12} md={12} xl={12}>
+      return <Row key={indLine + 'L'}><Col className={'cl'} lg={12} xs={12} md={12} xl={12}>
         <div className={'partRazmer prohod'} key={indLine + 'b'}>{pusto}</div>
         {line.map((col, indCol) => {
           let checked = ''
           if (!col) {
             checked = ' partaNikogo'
+          } else {
+            if (boarder && boarder.includes(col)) {
+              checked = ' partaBorder';
+            }
           }
+
           let plLine = null;
           let plCol = null;
+
           if (select && select.place && select.place.length) {
             plLine = select.place[0];
             plCol = select.place[1];
@@ -24,16 +28,21 @@ const ClassRoom = ({pole, pusto, places, over, out, select}) => {
               checked += ' studentSelect'
             }
           }
+
           if (!npart) {
             npart++;
-            return <div title={col} className={'partRazmer partaPusto' + checked} key={indCol}
-                        onMouseOver={() => (over && col) ? over(col) : null} onMouseLeave={() => out ? out() : null}>
+            return <div key={indCol} title={col} className={'partRazmer partaPusto' + checked} key={indCol}
+                        onMouseOver={() => (over && col) ? over(col) : null} onMouseLeave={() => out ? out() : null}
+            onClick={() => edit ? edit(indLine, indCol) : click(col)}>
               <span className={'notShow'}>{col}</span></div>
           } else {
             npart = 0;
             return <>
-              <div title={col} className={'partRazmer partaPusto' + checked} key={indCol}
-                   onMouseOver={() => (over && col) ? over(col) : null} onMouseLeave={() => out ? out() : null}><span
+              <div key={indCol} title={col} className={'partRazmer partaPusto' + checked} key={indCol}
+                   onMouseOver={() => (over && col) ? over(col) : null} onMouseLeave={() => out ? out() : null}
+                   onClick={() => edit ? edit(indLine, indCol) : click(col)}
+              >
+                <span
                 className={'notShow'}>{col}</span></div>
               {indCol < 5 && <div className={'partRazmer prohod'} key={indCol + 'p'}>{pusto}</div>}
             </>

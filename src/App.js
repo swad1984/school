@@ -2,47 +2,59 @@ import './App.css';
 import './css/bootstrap.css';
 import React, {useEffect, useState} from "react";
 import Draggable from 'react-draggable'
-import {Modal, Button, Container, Row, Col, Form} from 'react-bootstrap';
+import {Modal, Button, Container, Row, Col, Form, InputGroup} from 'react-bootstrap';
 import {StudentLine, EditLine} from "./editStudent";
 import {ClassRoom} from './classRoom'
-import {layer} from "@fortawesome/fontawesome-svg-core";
+import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
+import {
+  faGear,
+  faUserPlus,
+  faUserCheck,
+  faCirclePlus,
+  faPersonPraying,
+  faCircleMinus,
+  faFloppyDisk, faBan,
+  faRectangleList
+} from '@fortawesome/free-solid-svg-icons'
 
-//import {} from '@fortawesome/fontawesome-svg-core'
-//import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-
-const rows = 8; // Количество рядов
-const cols = 6; // Количество столбцов
-
-const symbol = 'X';
 const pusto = '';
+const placeholderText = `Введите сюда список учеников.
+Примеры строк:
+Иванов Дима,
+Сидорова Маша:1.4,
 
+`;
 /** @param {StudentShowType} student
  * @param {string} klass
  * @return {number[][]}
  * */
 function getPole(student, klass = '') {
   const places = [];
-  console.warn('GET_POLE', student, klass);
-  console.trace()
-  //student.forEach(/** @param {StudentShowType} stud */(stud) => {
   for (let i in student) {
     const len = places.length;
-    console.log('KEY', i, student[i])
-    console.log('CHECK', student[i].place, student[i].place[0], places.length)
     // Если ряд больше, чем есть в массиве, добавляем ряды
     if (student[i].place[0] > len - 1) {
-      console.log('DOINS', student[i].place[0] - len)
       for (let j = 0; j <= student[i].place[0] - len; j++) {
-        console.log('BEG_INS', j, student[i].place[0] - len)
         places.push([pusto, pusto, pusto, pusto, pusto, pusto]);
       }
     }
-    console.log('POLE_F', places)
     places[student[i].place[0]][student[i].place[1]] = i;
-    console.log(`STUDENT ${i} SIT on ${student[i].place[0]} ${student[i].place[1]}`)
   }
-  console.log('RETURNED POLE', places)
   return places;
+}
+
+/** @param {string} list */
+function parseList(list) {
+  let str;
+  list.trim();
+  str = list.replace(/[^а-яА-Яa-zA-z\d\s,:.]+/g, '');
+  console.log(str);
+  const parse = list.split(',').map((item) => {
+    const stud = item.replace(/\n/g, '').split(':')
+    return stud;
+  });
+  console.log(parse);
+  return str;
 }
 
 function App() {
@@ -50,12 +62,13 @@ function App() {
   const [data, setData] = useState(/** @type {KlassListType} */{});
   const [selected, setSelected] = useState(-1);
   const [pole, setPole] = useState([]);
-  const [coords, setCoords] = useState([0, 0]);
+  //const [coords, setCoords] = useState([0, 0]);
 
   const [compute, setCompute] = useState(true);
   const [open, setOpen] = useState(false);
   const [klassNames, setKlassNames] = useState(/** @type {string[]} */[])
   const [klassList, setKlassList] = useState(/** @type {StudentShowType[]} */[])
+  const [klassListPlaces, setKlassListPlaces] = useState(/** @type {string[]} */[])
   const [selectKlass, setSelectKlass] = useState('')
 
   const [edit, setEdit] = useState('')
@@ -68,10 +81,15 @@ function App() {
 
   const [partShow, setPartShow] = useState('');
 
-  useEffect(() => {
+  const [board, setBoard] = useState(/** @type {string[]} */[]);
+  const [uniqOnly, setUniqOnly] = useState(true);
+  const [label, setLabel] = useState('Желающий')
+  const [comments, setComments] = useState('');
 
-    //document.removeEventListener('keypress', clicker);
-    //document.addEventListener('keypress', clicker);
+  const [addListEnable, setAddListEnable] = useState(false);
+  const [addList, setAddList] = useState('')
+
+  useEffect(() => {
     let getData = {}
     let klass = '';
     try {
@@ -92,7 +110,6 @@ function App() {
       setData(getData);
       setSelectKlass(klass);
       setListClass(klass);
-      console.log('DO_WORK_1', klass, getData);
       setPole(getPole(getData[klass]));
     } catch (e) {
       const x = fetch('klass.json');
@@ -103,7 +120,6 @@ function App() {
         setData(res);
         klass = localStorage.getItem('className');
         if (!klass) {
-          console.log('GET_CLASS', getData[0], getData)
           for (let i in getData) {
             klass = i;
             break;
@@ -111,27 +127,9 @@ function App() {
         }
         setSelectKlass(klass);
         setListClass(klass)
-        console.log('DO_WORK_2', klass, getData);
         setPole(getPole(getData[klass]));
       })
     }
-
-    /*const area = pole;
-    for (let row = 0; row < rows; row++) {
-      area[row] = [];
-      for (let col = 0; col < cols; col++) {
-        area[row][col] = pusto;
-      }
-    }
-    area[0][0] = symbol; // Расположить X в верхнем левом углу*/
-
-    // хрень какая то
-
-    /*if (klass && getData.hasOwnProperty(klass)) {
-      setPole(getPole(getData[klass]));
-    } else {
-      setPole([pusto, pusto, pusto, pusto, pusto, pusto]);
-    }*/
   }, []);
 
   useEffect(() => {
@@ -139,42 +137,46 @@ function App() {
     for (let i in data) {
       klassName.push(i)
     }
-    setKlassNames(klassName);
+    setKlassNames([ ...klassName ])
+    if (selectKlass) {
+      setListClass(selectKlass);
+    }
     localStorage.setItem('myClasses', JSON.stringify(data));
   }, [data])
 
-  /*function getFruit() {
-    let variant = Math.random() * 100;
+  function getRndNum(max) {
+    return Math.floor(Math.random() * (max))
+  }
 
-    let t = 3;
-    setCompute(false);
-    setSelected(4); // Для отображения счетчика
-    let time = setInterval(() => {
-      if (t > 0) {
-        setSelected(t)
-        t--;
+  function getRandomNumber() {
+    if (klassList.length) {
+      if (klassList.length !== board.length) {
+        if (uniqOnly) {
+          const stud = [];
+          const studIdx = [];
+          klassList.forEach((item, index) => {
+            if (!board.includes(item.name)) {
+              stud.push(item.name);
+              studIdx.push(index);
+            }
+          })
+          const rnd = getRndNum(stud.length)
+          board.push(stud[rnd]);
+          return studIdx[rnd];
+        } else {
+          return getRndNum(klassList.length)
+        }
       } else {
-        setSelected(Math.round(variant / blur + 0.5) - 1);
-        setCompute(true)
-        clearInterval(time);
+        setLabel('Учитель! Всех учеников вызвали!')
+        return -2; // Все ученики вызваны
       }
-    }, 1000)
-
-  }*/
+    }
+    setLabel('В классе никого нет!')
+    return -3;// В классе нет учеников
+  }
 
   const getRandomStudent = () => {
     if (blur) {
-      console.log('blur', blur)
-      let variant = Math.random() * 100 * Math.random();
-      let rndInt;
-      let rnd;
-      rndInt = setInterval(() => {
-        setTimeout(() => {
-          rnd = Math.random() * 100 * Math.random();
-        }, Math.random() * 100 * Math.random());
-
-      }, Math.random() * 100 * Math.random())
-
       let t = 2;
       setCompute(false);
       setSelected(3); // Для отображения счетчика
@@ -183,88 +185,23 @@ function App() {
           setSelected(t)
           t--;
         } else {
-          const x = Math.round((variant/blur + rnd/blur)/2 + 0.5 - 1);
+          const x = getRandomNumber();
           setSelected(x);
           setCompute(true)
-
-          console.log('RND_RESULT', x, variant, rnd, blur)
-          console.log('RND_RESULT 1',
-            variant/blur,
-            rnd/blur,
-            variant/blur * rnd/blur,
-          (variant/blur * rnd/blur) / 2,
-            ((variant/blur * rnd/blur) / 2) + 0.4
-        )
           clearInterval(time);
-          clearInterval(rndInt)
         }
       }, 1000)
     } else {
       setSelected('В классе нет учеников')
+      setLabel('Учитель единственный в классе!')
     }
-
-  }
-
-  const clicker = (e) => {
-    //move(e.code);
-  }
-
-  const move = (vector) => {
-    const area = pole;
-    const coordsThis = coords;
-    //console.log('in', vector)
-    switch (vector) {
-      case 'KeyW':
-        if (coords[0] !== 0) {
-          area[coords[0] - 1][coords[1]] = symbol;
-          area[coords[0]][coords[1]] = pusto;
-          coords[0] = coords[0] - 1;
-        } else {
-          console.log('Выше некуда')
-        }
-        break;
-      case 'KeyS':
-        if (coords[0] !== rows - 1) {
-          area[coords[0] + 1][coords[1]] = symbol;
-          area[coords[0]][coords[1]] = pusto;
-          coords[0] = coords[0] + 1;
-        } else {
-          console.log('Ниже некуда')
-        }
-        break;
-      case 'KeyA':
-        if (coords[1] !== 0) {
-          area[coords[0]][coords[1] - 1] = symbol;
-          area[coords[0]][coords[1]] = pusto;
-          coords[1] = coords[1] - 1;
-        } else {
-          console.log('Край слева')
-        }
-        break;
-      case 'KeyD':
-        if (coords[1] !== cols - 1) {
-          area[coords[0]][coords[1] + 1] = symbol;
-          area[coords[0]][coords[1]] = pusto;
-          coords[1] = coords[1] + 1;
-        } else {
-          console.log('Край справа')
-        }
-    }
-    setPole([...area]);
-    setCoords([...coords]);
-
   }
 
   function movee(e) {
     e.preventDefault();
   }
 
-  /*useEffect(() => {
-    console.log('EditChange', edit)
-  }, [edit])*/
-
   /**
-   *
    * @param {StudentShowType} a
    * @param {StudentShowType} b
    */
@@ -284,23 +221,32 @@ function App() {
         setBlur(0);
       }
     }
-
   }
 
   useEffect(() => {
-    console.log('selected', selectKlass, klassList)
     setListClass(selectKlass)
-
   }, [selectKlass])
 
   useEffect(() => {
-    console.log('klasssss', klassList)
     setBlurs(klassList.length);
   }, [klassList])
 
+  useEffect(() => {
+    if (selected > -1 && compute) {
+      const countChange = { ...data }
+      countChange[selectKlass][klassList[selected].name].count++;
+      setData( { ...countChange })
+    }
+  }, [selected])
+
   const setListClass = (klass) => {
-    console.log('setList', klass)
+    /**
+     * @type {Object<string, StudentType>}
+     */
     const list = data[klass]
+    /**
+     * @type {StudentShowType[]}
+     */
     const student = [];
     for (let x in list) {
       student.push({
@@ -309,15 +255,18 @@ function App() {
         place: list[x].place
       })
     }
-    console.log('UPD_CLASS', list, klass)
     setPole(getPole({...list}))
 
     setKlassList(student.sort(sortByName));
+    const placesList = [];
+    student.forEach((item) => {
+      placesList.push(item.place.toString());
+    })
+    setKlassListPlaces([ ...placesList ]);
     setBlurs(student.length);
   }
 
   const getKlassList = (klass) => {
-    console.log('2', klass)
     let cl = klass + '';
     setSelectKlass('');
     setSelectKlass(cl);
@@ -327,17 +276,17 @@ function App() {
     if (data.hasOwnProperty(e.currentTarget.value)) {
       getKlassList(e.currentTarget.value);
       setSelected(-1);
-      setCompute(false)
+      setCompute(true)
+      setLabel('Желающий');
+      setBoard([])
       localStorage.setItem('className', e.currentTarget.value);
     }
   }
 
   const saveEdit = (changeData) => {
-    console.log(selectKlass, changeData);
     if (selectKlass) {
       const editData = {...data};
       delete editData[selectKlass][changeData.key];
-      console.log('SAVE', changeData);
       editData[selectKlass][changeData.nameChange] = {
         count: changeData.countChange,
         place: changeData.placeChange
@@ -356,12 +305,10 @@ function App() {
     } else {
       setAddNewStudent(false)
     }
-
   }
 
   /** @param {string} name */
   const clickEdit = (name) => {
-    //console.log('clickEdit', name);
     setEdit(name);
   }
 
@@ -370,7 +317,7 @@ function App() {
       const editData = {...data};
       delete editData[selectKlass][name];
       setData({...editData});
-      getKlassList(selectKlass);
+      setListClass(selectKlass);
     }
   }
 
@@ -389,7 +336,6 @@ function App() {
   const chNewClass = (e) => {
     setKlassNew(e.currentTarget.value);
   }
-  //console.log(selected)
 
   const onOverPart = (name) => {
     setPartShow(name)
@@ -398,8 +344,48 @@ function App() {
   const onOverPartEnd = () => {
     setPartShow('')
   }
+
+  const clickParta = /** @param {string} name */(name) => {
+    if (name) {
+      board.push(name);
+      for (let i = 0; i <= klassList.length; i++) {
+        if (klassList[i].name === name) {
+          setSelected(i);
+          break;
+        }
+      }
+    }
+  }
+
+  const editStudent = () => {
+    //console.log(3)
+  }
+
   return (
     <div className="App">
+      <Container fluid>
+      <Row>
+        <Col lg={11} sm={11} md={11} xl={11}>
+          <div className={'otstup'}>
+          <InputGroup className={'mb-3'}>
+            <Form.Select onChange={() => setUniqOnly(e => !e)}>
+              <option key={'unique'} value={'unique'} selected >Не вызывать повторно</option>
+              <option key={'all'} value={'all'} >Вызывать повторно</option>
+            </Form.Select>
+            <Button
+              variant={board.length ? 'info' : 'secondary'}
+              onClick={() => setBoard([])}
+              disabled={!board.length}
+            >Сбросить список вызванных</Button>
+          </InputGroup>
+
+          </div>
+
+        </Col>
+        <Col style={{textAlign: 'end'}} lg={1} sm={1} md={1} xl={1}>
+          <FontAwesomeIcon onClick={() => setOpen(o => !o)}  style={{color: '#565656', paddingTop: 13, cursor: 'pointer'}} icon={faGear} size={'lg'} />
+        </Col>
+      </Row>
       <Row style={{padding: 5}}>
         <Col lg={2} md={2} xs={2} sm={2}>
           <Form.Select id={'idClass'} value={selectKlass} defaultValue={''} onChange={changeSelectEdit}
@@ -408,24 +394,49 @@ function App() {
           </Form.Select>
         </Col>
         <Col lg={8} md={8} xs={8} sm={8}>
-          <button onClick={getRandomStudent}>Кто пойдет к доске?</button>
-          <span onClick={() => setOpen(o => !o)} className={'editList'}>Изменить</span>
+          <Button onClick={getRandomStudent} disabled={!compute} >
+            <FontAwesomeIcon icon={faPersonPraying} style={{color: '#FFFFFF'}} />
+            {' '}
+            Кто пойдет к доске?
+          </Button>
           <br/>
           {partShow ? <span style={{fontSize: '2em'}}>{partShow}</span> : selected > -1 ? compute ?
             <span style={{fontSize: '2em'}}>{klassList[selected].name}</span> :
-            <span style={{fontSize: '2em'}}>{selected}</span> : <span style={{fontSize: '2em'}}>Желающий</span>}
+            <span style={{fontSize: '2em'}}>{selected}</span> : <span style={{fontSize: '2em'}}>{label}</span>}
         </Col>
-        <Col lg={2} md={2} xs={2} sm={2}/>
+        <Col lg={2} md={2} xs={2} sm={2}>
+
+        </Col>
       </Row>
 
       <hr/>
 
-      <ClassRoom pole={pole} pusto={pusto} places={places} select={compute ? klassList[selected] : null} over={onOverPart} out={onOverPartEnd}/>
+      <ClassRoom
+        pole={pole}
+        pusto={pusto}
+        places={places}
+        select={compute ? klassList[selected] : null}
+        over={onOverPart}
+        out={onOverPartEnd}
+        boarder={board}
+        click={clickParta}
+      />
 
       <hr/>
-      <Draggable handle={'#kot'} onDrag={movee}>
-        <div id={'kot'}>
-          <img alt={'кот'} src={'/img/kot.jpg'} width={150}/>
+      <Button
+        variant="success"
+        disabled={selected === -1}
+        onClick={() => {
+        setSelected(-1);
+        setLabel('Желающий')
+      }}>
+        <FontAwesomeIcon icon={faUserCheck} style={{color: '#FFFFFF'}} />
+        {' '}
+        Ученик ответил у доски
+      </Button>
+      <Draggable handle={'#kot'} onDrag={movee} >
+        <div id={'kot'} style={{position: "absolute"}}>
+          <img alt={'кот'} src={'/img/kot.jpg'} width={150} style={{position: "absolute"}}/>
         </div>
       </Draggable>
 
@@ -434,27 +445,93 @@ function App() {
           <Modal.Title style={{width: '100%'}}>
             <Container fluid>
               <Row>
-                <Col lg={9} md={9} xs={9}>
-                  <Form.Select id={'idClass'} value={selectKlass} defaultValue={''} onChange={changeSelectEdit}
-                               placeholder={'Выберите класс'} style={{width: 400}}>
+                <Col lg={5} md={5} xs={5}>
+                  <Form.Select
+                    id={'idClass'}
+                    value={selectKlass}
+                    defaultValue={''}
+                    onChange={changeSelectEdit}
+                    placeholder={'Выберите класс'}
+                    style={{width: 400, marginTop: 0}}>
                     <option value={''} disabled selected>Выберите класс</option>
                     {klassNames.map((item, index) => <option key={item} value={item}>{item}</option>)}
                   </Form.Select>
                 </Col>
-                <Col lg={3} md={3} xs={3}>
-                  {!addClk ? <Button onClick={() => setAddClk(true)}>Добавить</Button> :
-                    <div><input style={{width: 50}} value={klassNew} onChange={chNewClass}/>
-                      <Button onClick={() => {
-                        const list = {...data};
-                        if (!data.hasOwnProperty(klassNew) && klassNew) {
-                          list[klassNew] = {};
-                        }
-                        setData({...list});
-                        setAddClk(false)
-                        setSelectKlass(klassNew);
-                        setKlassNew('');
-                      }
-                      }>Сохранить</Button></div>}
+                <Col lg={7} md={7} xs={7}>
+                  {!addClk ? <>
+                    <div style={{display: 'flex', alignItems: 'center', height: 38}}>
+                      <FontAwesomeIcon
+                        icon={faCirclePlus}
+                        style={{color: '#198754', width: 30, paddingLeft: 25, cursor: 'pointer'}}
+                        onClick={() => {
+                          setAddClk(true);
+                          setComments('')
+                        }}
+                        onMouseOver={() => setComments('Добавить новый класс')}
+                        onMouseLeave={() => setComments('')}
+                      />
+                      <FontAwesomeIcon
+                        icon={faCircleMinus}
+                        style={{color: '#ff3f3f', width: 30, paddingLeft: 25, cursor: 'pointer'}}
+                        onMouseOver={() => setComments('Удалить этот класс')}
+                        onMouseLeave={() => setComments('')}
+                        onClick={() => {
+                          if (window.confirm(`Вы уверены, что хотите удалить класс "${selectKlass}"`)) {
+                            const list = { ...data };
+                            delete list[selectKlass];
+
+                            setData({ ...list});
+                            let flg = true;
+                            for (let i in list) {
+                              setSelectKlass(i);
+                              flg = false;
+                              break;
+                            }
+                            if (flg) setSelectKlass('');
+                          }
+                          setComments('');
+
+                        }}
+                      />
+                      <div style={{paddingLeft: 25, fontSize: '0.75em', color: '#535353'}}>{comments}</div>
+                    </div>
+                    </>
+                    :
+                    <div style={{display: 'flex', alignItems: 'center', height: 38}}>
+                      <label htmlFor={'addNewClass'} style={{paddingLeft: 10, fontSize: '0.75em'}}>Новый класс:</label>
+                      <input id={'addNewClass'} style={{width: 55, marginLeft: 4}} value={klassNew} onChange={chNewClass}/>
+
+                      <FontAwesomeIcon
+                        icon={faFloppyDisk}
+                        style={{color: '#198754', marginLeft: 20, paddingRight: 10, cursor: 'pointer'}}
+                        onClick={() => {
+                          if (klassNew) {
+                            const list = {...data};
+                            if (!data.hasOwnProperty(klassNew)) {
+                              list[klassNew] = {};
+                            }
+                            setData({...list});
+                            setAddClk(false)
+                            setSelectKlass(klassNew);
+                            setKlassNew('');
+                            setComments('');
+                          }
+                        }}
+                        title={'Сохранить'}
+                      />
+                      {' '}
+                      <FontAwesomeIcon
+                        icon={faBan}
+                        style={{color: '#ff3f3f', marginLeft: 10, cursor: 'pointer'}}
+                        onClick={() => {
+                          setAddClk(false);
+                          setKlassNew('');
+                          setComments('');
+                        }}
+                        title={'Отмена'}
+                      />
+
+                      <Button disabled style={{display: 'none'}}>Загрузить список</Button></div>}
                 </Col>
               </Row>
             </Container>
@@ -462,33 +539,71 @@ function App() {
         </Modal.Header>
         <Modal.Body>
           <Row>
-            <Col lg={7}>
-              <table cellPadding={0} cellSpacing={0} style={{width: '100%'}}>
+            <Col lg={6}>
+              <table id={'stEdit'} cellPadding={0} cellSpacing={0} style={{width: 500}}>
                 <tr key={'headerRed'}>
-                  <td style={{width: 250}}>ФИО ученика</td>
-                  <td style={{width: 60}}>Вызывали</td>
-                  <td style={{width: 100}}>Место</td>
+                  <td style={{width: 200, textAlign: 'left'}}>ФИО ученика</td>
+                  <td style={{width: 75}}>Вызывали</td>
+                  <td style={{width: 125}}>Место</td>
                   <td style={{width: 100}}>Действия</td>
                 </tr>
-                {klassList.map(student => {
-                  return <StudentLine selected={edit} student={student} click={clickEdit} save={saveEdit}
-                                      cancel={cancelBtn} delete={delStudent}/>
+                {klassList.map((student, index) => {
+                  return <StudentLine key={index} selected={edit} student={student} click={clickEdit} save={saveEdit}
+                                      cancel={cancelBtn} delete={delStudent} over={partShow} places={klassListPlaces}/>
                 })}
                 <tr key={'addStud'}>
                   <td style={{textAlign: 'right', paddingRight: 30, margin: 3, padding: 4}} colSpan={4}>
-                    <Button onClick={() => setAddNewStudent(true)} size={'sm'}>Добавить ученика</Button>
+                    <Button size={'sm'} style={{marginRight: 25, display: !addListEnable ? 'inline-block' : 'none'}} onClick={() => setAddListEnable('true')}>
+                      <FontAwesomeIcon icon={faRectangleList} style={{color: '#c2ffe0'}}/>
+                      {' '}Добавить список учеников
+                    </Button>
+                    <Button style={{display: !addListEnable ? 'inline-block' : 'none'}} onClick={() => setAddNewStudent(true)} size={'sm'}>
+                      <FontAwesomeIcon icon={faUserPlus} style={{color: '#c2ffe0'}} />
+                      {' '}Добавить ученика
+                    </Button>
+                    {addListEnable && <>
+                      <div style={{display: 'flex', width: '100%'}}>
+                        <textarea
+                          style={{width: '100%', height: 200, margin: 10}}
+                          placeholder={placeholderText}
+                          value={addList}
+                          onChange={(e) => {
+                            console.log(addList)
+                            setAddList(e.currentTarget.value);
+                          }}
+                        /><br/>
+
+
+                      </div>
+                      <div style={{width: '100%', textAlign: 'left', fontSize: '0.85em', margin: 10}}>
+                        Формат строки: <br />
+                        Фамилия Имя[Отчество], - <i>Отчетсво опционально</i> <br/>
+                        Фамилия Имя[Отчество]:ряд.место, - <i>Можно задать ученику сразу номер ряда и место</i><br/>
+                        Список без спрец символов. Разделитель запятая. Если копируете из Word, пожалуйста, сначала вставьте скопированный текст в обычный блокнот, далее копируете текст из блокнота и вставляете сюда(это поможет убрать множество лишних служебных символов)
+                      </div><br/>
+                      <Button onClick={() => {
+                        //setAddListEnable(false)
+                        console.log('RET', parseList(addList));
+                      }} size={'sm'}>Загрузить</Button>{' '}
+                      <Button onClick={() => {
+                        setAddListEnable(false);
+                        setAddList('');
+                      }} size={'sm'}>Отмена</Button>
+                    </>
+                    }
                   </td>
                 </tr>
                 {addNewStudent && <EditLine {...studentTemplate()} />}
               </table>
             </Col>
-            <Col lg={5}><br/>
-              <ClassRoom pole={pole} pusto={pusto} places={places}/>
+            <Col lg={6}><br/>
+              <ClassRoom pole={pole} pusto={pusto} places={places} edit={editStudent} over={onOverPart} out={onOverPartEnd}/>
             </Col>
           </Row>
 
         </Modal.Body>
       </Modal>
+      </Container>
     </div>
   );
 }
