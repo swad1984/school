@@ -503,7 +503,7 @@ function App() {
           <Modal.Title style={{width: '100%'}}>
             <Container fluid>
               <Row>
-                <Col lg={5} md={5} xs={5}>
+                <Col lg={5} md={5} xs={5} xl={5}>
                   <Form.Select
                     id={'idClass'}
                     value={selectKlass}
@@ -515,7 +515,7 @@ function App() {
                     {klassNames.map((item, index) => <option key={item} value={item}>{item}</option>)}
                   </Form.Select>
                 </Col>
-                <Col lg={7} md={7} xs={7}>
+                <Col lg={4} md={4} xs={4} xl={4}>
                   {!addClk ? <>
                     <div style={{display: 'flex', width: '100%', alignItems: 'center', height: 38}}>
                       <FontAwesomeIcon
@@ -525,7 +525,7 @@ function App() {
                           setAddClk(true);
                           setComments('')
                         }}
-                        onMouseOver={() => setComments('Добавить новый класс')}
+                        onMouseOver={() => setComments('Добавить класс')}
                         onMouseLeave={() => setComments('')}
                       />
                       <FontAwesomeIcon
@@ -590,6 +590,9 @@ function App() {
                       />
 
                       <Button disabled style={{display: 'none'}}>Загрузить список</Button></div>}
+                </Col>
+                <Col lg={3} md={3} xs={3} xl={3}>
+                  <Button variant="outline-info" size={'sm'} onClick={() => window.open('https://github.com/swad1984/school/issues')}>Ошибка / Предожение</Button>
                 </Col>
               </Row>
             </Container>
