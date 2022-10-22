@@ -33,14 +33,14 @@ const ClassRoom = ({pole, pusto, over, out, select, boarder, click, edit}) => {
             npart++;
             return <div key={indCol} title={col} className={'partRazmer partaPusto' + checked} key={indCol}
                         onMouseOver={() => (over && col) ? over(col) : null} onMouseLeave={() => out ? out() : null}
-            /*onClick={() => edit ? edit(indLine, indCol) : click(col)}*/>
+            onClick={() => edit ? edit(indLine, indCol) : click ? click(col) : null}>
               <span className={'notShow'}>{col}</span></div>
           } else {
             npart = 0;
             return <>
               <div key={indCol} title={col} className={'partRazmer partaPusto' + checked} key={indCol}
                    onMouseOver={() => (over && col) ? over(col) : null} onMouseLeave={() => out ? out() : null}
-                   /*onClick={() => edit ? edit(indLine, indCol) : click(col)}*/
+                   onClick={() => edit ? edit(indLine, indCol) : click ? click(col) : null}
               >
                 <span
                 className={'notShow'}>{col}</span></div>
