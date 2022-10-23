@@ -423,6 +423,11 @@ function App() {
   return (
     <div className="App">
       <Container fluid>
+        <Draggable handle={'#kot'} onDrag={movee} defaultPosition={{x: 92, y: 57}}>
+          <div id={'kot'} style={{position: "absolute"}}>
+            <img alt={'кот'} src={'/img/kot.jpg'} width={150} style={{position: "absolute"}}/>
+          </div>
+        </Draggable>
       <Row>
         <Col lg={11} sm={11} md={11} xl={11}>
           <div className={'otstup'}>
@@ -492,11 +497,6 @@ function App() {
         {' '}
         Ученик ответил у доски
       </Button>
-      <Draggable handle={'#kot'} onDrag={movee} >
-        <div id={'kot'} style={{position: "absolute"}}>
-          <img alt={'кот'} src={'/img/kot.jpg'} width={150} style={{position: "absolute"}}/>
-        </div>
-      </Draggable>
 
       <Modal show={open} fullscreen={true} onHide={() => setOpen(false)}>
         <Modal.Header closeButton>
