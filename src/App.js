@@ -65,11 +65,10 @@ function parseList(list) {
     const stud = item.replace(/\n/g, '').split(':');
     if (stud.length === 1) return [stud[0], [0, 0], true];
     try {
-      let c = stud[1];
       stud[1] = stud[1].split('.');
-      stud[1][0] = Number(stud[1][0]);
-      stud[1][1] = Number(stud[1][1]);
-      if (stud[1][0] > ryad || stud[1][1] > 5) {
+      stud[1][0] = Number(stud[1][0]) - 1;
+      stud[1][1] = Number(stud[1][1]) - 1;
+      if (stud[1][0] > ryad || stud[1][1] > 5 || stud[1][0] < 0 || stud[1][1] < 0) {
         stud[2] = true;
       } else {
         if (parts.includes(stud[1].toString())) {
@@ -176,22 +175,28 @@ function App() {
       setListClass(klass);
       setPole(getPole(getData[klass]));
     } catch (e) {
-      const x = fetch('klass.json');
-      x.then(async (res) => {
-        return await res.json();
-      }).then(/** @param {KlassListType} res */res => {
-        setData({ ...res });
-        klass = localStorage.getItem('className');
-        if (!klass || !res[klass]) {
-          for (let i in res) {
-            klass = i;
-            break;
+      try {
+        const x = fetch('klass.json', {
+          mode: 'no-cors'
+        });
+        x.then(async (res) => {
+          return await res.json();
+        }).then(/** @param {KlassListType} res */res => {
+          setData({ ...res });
+          klass = localStorage.getItem('className');
+          if (!klass || !res[klass]) {
+            for (let i in res) {
+              klass = i;
+              break;
+            }
           }
-        }
-        setSelectKlass(klass);
-        setListClass(klass)
-        setPole(getPole(res[klass]));
-      })
+          setSelectKlass(klass);
+          setListClass(klass)
+          setPole(getPole(res[klass]));
+        })
+      } catch (e) {
+        console.error(e);
+      }
     }
   }, []);
 
@@ -425,7 +430,7 @@ function App() {
       <Container fluid>
         <Draggable handle={'#kot'} onDrag={movee} defaultPosition={{x: 92, y: 57}}>
           <div id={'kot'} style={{position: "absolute"}}>
-            <img alt={'кот'} src={'/img/kot.jpg'} width={150} style={{position: "absolute"}}/>
+            <img alt={'кот'} src={'./img/kot.jpg'} width={150} style={{position: "absolute"}}/>
           </div>
         </Draggable>
       <Row>
@@ -523,7 +528,7 @@ function App() {
                         style={{color: '#198754', width: 30, paddingLeft: 25, cursor: 'pointer'}}
                         onClick={() => {
                           setAddClk(true);
-                          setComments('')
+                          setComments('');
                         }}
                         onMouseOver={() => setComments('Добавить класс')}
                         onMouseLeave={() => setComments('')}

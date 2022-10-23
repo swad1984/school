@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Помощь учителю</title>
+</head>
+<body>
+<button id="clean">Очистить кэш</button>
+<button id="save">Сохранить данные</button>
+<script>
+    const clear = document.getElementById('clean');
+    clear.addEventListener('click', (e) => {
+        if (window.confirm('Уверены в удалении всех данных?')) {
+            localStorage.removeItem('myClasses');
+            localStorage.removeItem('className');
+        }
+    });
+
+    const save = document.getElementById('save');
+    save.addEventListener('click', (e) => {
+        const a = document.createElement('a');
+        const b = new Blob([localStorage.getItem('myClasses')]);
+        a.style.display = 'none';
+        a.id='savedata';
+        const url = window.URL.createObjectURL(b);
+        a.href = url;
+        a.download = 'klass.json'
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    })
+</script>
+</body>
+</html>
