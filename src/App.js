@@ -597,7 +597,7 @@ function App() {
                       <Button disabled style={{display: 'none'}}>Загрузить список</Button></div>}
                 </Col>
                 <Col lg={3} md={3} xs={3} xl={3}>
-                  <Button variant="outline-info" size={'sm'} onClick={() => window.open('https://github.com/swad1984/school/issues')}>Ошибка / Предожение</Button>
+                  <Button variant="outline-info" size={'sm'} onClick={() => window.open('https://github.com/swad1984/school/issues')}>Ошибка / Предложение</Button>
                 </Col>
               </Row>
             </Container>
